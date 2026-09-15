@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # SDK and EDR are consumed as path repositories resolved from their default
+  # branches, so nothing here changes when they drift. Re-run weekly to catch it.
+  schedule:
+    - cron: '0 5 * * 1'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: laravel
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+
+    steps:
+      # composer.json wires the siblings in as `../sdk` and `../edr`, so both
+      # checkouts have to sit next to this one inside the workspace.
+      - name: Check out credit-check-laravel
+        uses: actions/checkout@v5
+        with:
+          path: laravel
+
+      - name: Check out credit-check-sdk
+        uses: actions/checkout@v5
+        with:
+          repository: la-souris/credit-check-sdk
+          ref: main
+          path: sdk
+
+      - name: Check out credit-check-edr
+        uses: actions/checkout@v5
+        with:
+          repository: la-souris/credit-check-edr
+          ref: main
+          path: edr
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-php${{ matrix.php }}-${{ hashFiles('laravel/composer.json') }}
+          restore-keys: |
+            composer-php${{ matrix.php }}-
+            composer-
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit

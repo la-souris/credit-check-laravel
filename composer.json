@@ -5,12 +5,12 @@
     "license": "proprietary",
     "require": {
         "php": "^8.3",
-        "la-souris/credit-check-sdk": "*",
+        "la-souris/credit-check-sdk": "^1.0",
         "illuminate/contracts": "^11.0 || ^12.0",
         "illuminate/support": "^11.0 || ^12.0"
     },
     "require-dev": {
-        "la-souris/credit-check-edr": "*",
+        "la-souris/credit-check-edr": "^1.0",
         "guzzlehttp/guzzle": "^7.8",
         "nyholm/psr7": "^1.8",
         "orchestra/testbench": "^9.0 || ^10.0",
@@ -39,10 +39,6 @@
             }
         }
     },
-    "repositories": [
-        { "type": "path", "url": "../sdk", "options": { "symlink": true } },
-        { "type": "path", "url": "../edr", "options": { "symlink": true } }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
