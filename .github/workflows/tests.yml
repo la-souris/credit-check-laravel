@@ -30,19 +30,19 @@ jobs:
       # composer.json wires the siblings in as `../sdk` and `../edr`, so both
       # checkouts have to sit next to this one inside the workspace.
       - name: Check out credit-check-laravel
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           path: laravel
 
       - name: Check out credit-check-sdk
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: la-souris/credit-check-sdk
           ref: main
           path: sdk
 
       - name: Check out credit-check-edr
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: la-souris/credit-check-edr
           ref: main
