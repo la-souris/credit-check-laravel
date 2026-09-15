@@ -1,0 +1,48 @@
+{
+    "name": "la-souris/credit-check-laravel",
+    "description": "Laravel integration for the credit-check SDK: config, service provider, driver manager and facade for any CreditChecker provider (EDR and beyond).",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "la-souris/credit-check-sdk": "*",
+        "illuminate/contracts": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0"
+    },
+    "require-dev": {
+        "la-souris/credit-check-edr": "*",
+        "guzzlehttp/guzzle": "^7.8",
+        "nyholm/psr7": "^1.8",
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "phpunit/phpunit": "^10.5 || ^11.0"
+    },
+    "suggest": {
+        "la-souris/credit-check-edr": "Required to use the `edr` driver."
+    },
+    "autoload": {
+        "psr-4": {
+            "LaSouris\\CreditCheck\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LaSouris\\CreditCheck\\Laravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaSouris\\CreditCheck\\Laravel\\CreditCheckerServiceProvider"
+            ],
+            "aliases": {
+                "CreditCheck": "LaSouris\\CreditCheck\\Laravel\\Facades\\CreditCheck"
+            }
+        }
+    },
+    "repositories": [
+        { "type": "path", "url": "../sdk", "options": { "symlink": true } },
+        { "type": "path", "url": "../edr", "options": { "symlink": true } }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
