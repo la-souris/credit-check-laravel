@@ -11,7 +11,7 @@
     },
     "require-dev": {
         "la-souris/credit-check-edr": "^1.0",
-        "guzzlehttp/guzzle": "^7.8",
+        "guzzlehttp/guzzle": "^7.8 || ^8.0",
         "nyholm/psr7": "^1.8",
         "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "phpunit/phpunit": "^10.5 || ^11.0"
