@@ -11,8 +11,10 @@ use InvalidArgumentException;
 use LaSouris\CreditCheck\Edr\Auth\TokenStore;
 use LaSouris\CreditCheck\Laravel\Auth\CacheTokenStore;
 use LaSouris\CreditCheck\Edr\CreditCheck\EdrCreditChecker;
+use LaSouris\CreditCheck\Edr\CreditCheck\EdrPayloadMapper;
 use LaSouris\CreditCheck\Edr\Environment;
 use LaSouris\CreditCheck\Edr\EdrClient;
+use LaSouris\CreditCheck\Laravel\Support\EdrWebhook;
 use LaSouris\CreditCheck\Sdk\Provider\CreditChecker;
 use LaSouris\CreditCheck\Sdk\Provider\ProviderCapabilities;
 use Psr\Http\Client\ClientInterface;
@@ -28,7 +30,7 @@ use Psr\Http\Message\StreamFactoryInterface;
  * selector — comes from the #[Provider] attribute on that class, so it is read without
  * constructing the provider.
  *
- * @method \LaSouris\CreditCheck\Sdk\Response\Response<\LaSouris\CreditCheck\Sdk\Result\CreditCheckReceipt> submitCheck(\LaSouris\CreditCheck\Sdk\Request\CreateCreditCheck $request)
+ * @method \LaSouris\CreditCheck\Sdk\Response\Response<\LaSouris\CreditCheck\Sdk\Result\CreditCheckReceipt> submitCheck(\LaSouris\CreditCheck\Sdk\Request\CreateCreditCheckRequest $request)
  * @method \LaSouris\CreditCheck\Sdk\Response\Response<\LaSouris\CreditCheck\Sdk\Result\CreditCheckResult> getResult(string $reference)
  * @method \LaSouris\CreditCheck\Sdk\Response\Response<list<string>> getChangedChecksSince(\DateTimeInterface $since)
  */
@@ -156,7 +158,25 @@ class CreditCheckerManager
             $this->tokenStore($name, $config, $environment->value . '|' . $email),
         );
 
-        return new EdrCreditChecker($client);
+        return new EdrCreditChecker($client, new EdrPayloadMapper($this->webhookUrl()));
+    }
+
+    /**
+     * The callback URL to send on order creation, or null to omit it entirely.
+     *
+     * `use_in_create` is bool|string: `false` (default) omits it, `true` derives it from this
+     * application's own webhook route, and a string is sent as-is — for when the submitting
+     * app's own APP_URL isn't the public address EDR should call (e.g. behind a gateway).
+     */
+    private function webhookUrl(): ?string
+    {
+        $setting = $this->config('credit-check.webhook.use_in_create', false);
+
+        return match (true) {
+            is_string($setting) && $setting !== '' => $setting,
+            (bool) $setting => EdrWebhook::url($this->container->make('config')),
+            default => null,
+        };
     }
 
     /**

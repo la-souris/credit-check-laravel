@@ -46,6 +46,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Webhooks
+    |--------------------------------------------------------------------------
+    |
+    | enabled            Register our incoming webhook route, so the
+    |                    provider's calls actually land somewhere.
+    | use_in_create      Send our callback URL along on order creation.
+    |                    bool|string: false (default) omits it; true derives
+    |                    it from this application's own APP_URL (see
+    |                    Support\EdrWebhook); a string is sent as-is — for
+    |                    when the submitting app's own APP_URL isn't the
+    |                    public address EDR should call (e.g. behind a
+    |                    gateway).
+    | routing.prefix     Path in front of the provider-specific route (e.g.
+    |                    "edr"), so an install can namespace it as it needs
+    |                    to.
+    | routing.middleware Middleware the webhook route runs behind.
+    |
+    */
+    'webhook' => [
+        'enabled' => env('CREDIT_CHECK_WEBHOOK_ENABLED', false),
+        'use_in_create' => env('CREDIT_CHECK_WEBHOOK_URL', false),
+        'routing' => [
+            'prefix' => env('CREDIT_CHECK_WEBHOOK_PREFIX', 'webhooks/credit-check'),
+            'middleware' => ['api'],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Providers
     |--------------------------------------------------------------------------
     */

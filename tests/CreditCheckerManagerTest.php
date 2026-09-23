@@ -8,8 +8,10 @@ use InvalidArgumentException;
 use LaSouris\CreditCheck\Laravel\CreditCheckerManager;
 use LaSouris\CreditCheck\Laravel\Facades\CreditCheck;
 use LaSouris\CreditCheck\Edr\CreditCheck\EdrCreditChecker;
+use LaSouris\CreditCheck\Edr\CreditCheck\EdrPayloadMapper;
 use LaSouris\CreditCheck\Sdk\Provider\CreditChecker;
 use LaSouris\CreditCheck\Laravel\Tests\Fake\FakeCreditChecker;
+use ReflectionProperty;
 
 final class CreditCheckerManagerTest extends TestCase
 {
@@ -17,6 +19,7 @@ final class CreditCheckerManagerTest extends TestCase
     {
         parent::defineEnvironment($app);
 
+        $app['config']->set('app.url', 'https://admin.example.com');
         $app['config']->set('credit-check.providers', [
             [
                 'class' => EdrCreditChecker::class,
@@ -79,5 +82,56 @@ final class CreditCheckerManagerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $this->app->make(CreditCheckerManager::class)->driver('nope');
+    }
+
+    public function testWebhookUrlIsOmittedFromEdrDriverByDefault(): void
+    {
+        $checker = $this->app->make(CreditCheckerManager::class)->driver('edr');
+
+        self::assertNull($this->mapperWebhookUrl($checker));
+    }
+
+    public function testWebhookUrlIsWiredIntoEdrDriverWhenUseInCreateIsEnabled(): void
+    {
+        $this->app['config']->set('credit-check.webhook.use_in_create', true);
+
+        $checker = $this->app->make(CreditCheckerManager::class)->driver('edr');
+
+        self::assertSame(
+            'https://admin.example.com/webhooks/credit-check/edr',
+            $this->mapperWebhookUrl($checker),
+        );
+    }
+
+    public function testWebhookUrlHonoursACustomPrefix(): void
+    {
+        $this->app['config']->set('credit-check.webhook.use_in_create', true);
+        $this->app['config']->set('credit-check.webhook.routing.prefix', 'inbound/edr-callbacks');
+
+        $checker = $this->app->make(CreditCheckerManager::class)->driver('edr');
+
+        self::assertSame(
+            'https://admin.example.com/inbound/edr-callbacks/edr',
+            $this->mapperWebhookUrl($checker),
+        );
+    }
+
+    public function testUseInCreateAsAStringIsSentAsIs(): void
+    {
+        $this->app['config']->set('credit-check.webhook.use_in_create', 'https://public.example.com/hooks/edr');
+
+        $checker = $this->app->make(CreditCheckerManager::class)->driver('edr');
+
+        self::assertSame('https://public.example.com/hooks/edr', $this->mapperWebhookUrl($checker));
+    }
+
+    private function mapperWebhookUrl(EdrCreditChecker $checker): ?string
+    {
+        $mapperProperty = new ReflectionProperty(EdrCreditChecker::class, 'mapper');
+        $mapper = $mapperProperty->getValue($checker);
+
+        $webhookUrlProperty = new ReflectionProperty(EdrPayloadMapper::class, 'webhookUrl');
+
+        return $webhookUrlProperty->getValue($mapper);
     }
 }

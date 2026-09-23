@@ -66,6 +66,40 @@ a token may sit at rest; `enabled => false` switches caching off entirely.
 Cache problems never break a check: an unreadable or unwritable cache costs an extra login,
 nothing more.
 
+## Webhooks
+
+EDR calls back on order status changes rather than making you poll. Two independent settings
+control this, both off by default:
+
+```php
+// config/credit-check.php
+'webhook' => [
+    'enabled'       => env('CREDIT_CHECK_WEBHOOK_ENABLED', false),        // register the listener route
+    'use_in_create' => env('CREDIT_CHECK_WEBHOOK_URL', false),            // send the callback URL on order creation
+    'routing' => [
+        'prefix'     => env('CREDIT_CHECK_WEBHOOK_PREFIX', 'webhooks/credit-check'),
+        'middleware' => ['api'],
+    ],
+],
+```
+
+- `enabled` registers `POST /{routing.prefix}/edr` (`webhooks/credit-check/edr` by default), which
+  dispatches `LaSouris\CreditCheck\Laravel\Events\CreditCheckWebhookReceivedEvent` (with `provider`
+  and `request`) for your own listener to act on. Turn this on only in the application that
+  actually receives the callback. `$event->metadata` carries the provider's own parsed fields —
+  EDR's is `LaSouris\CreditCheck\Edr\Webhook\Metadata` (`reference`, `orderId`, `newStatus`, parsed
+  from its `Ref`/`orderId`/`newStatus` callback query parameters).
+- `use_in_create` is `bool|string`: `true` sends `statusChangeCallback` on order creation, built
+  from this application's own `APP_URL`; a string is sent as-is instead — for when the submitting
+  app's own `APP_URL` isn't the public address EDR should call (e.g. behind a gateway with its own
+  domain). Turn this on in whichever application submits the order — e.g. an admin platform that
+  creates checks but never runs the listener itself.
+
+`enabled` and `use_in_create` are independent on purpose: the app that submits an order is often
+not the same app that receives its callback, so one may be on with the other off (see
+`LaSouris\CreditCheck\Laravel\Support\EdrWebhook`, the single source of truth both the listener
+route and the derived create-payload URL are built from).
+
 ## Usage
 
 ```php
