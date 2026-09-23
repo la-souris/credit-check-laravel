@@ -8,7 +8,7 @@ use DateTimeInterface;
 use LaSouris\CreditCheck\Sdk\Provider\Capability;
 use LaSouris\CreditCheck\Sdk\Provider\CreditChecker;
 use LaSouris\CreditCheck\Sdk\Provider\Provider;
-use LaSouris\CreditCheck\Sdk\Request\CreateCreditCheck;
+use LaSouris\CreditCheck\Sdk\Request\CreateCreditCheckRequest;
 use LaSouris\CreditCheck\Sdk\Response\ChangedChecksResponse;
 use LaSouris\CreditCheck\Sdk\Response\CheckStatus;
 use LaSouris\CreditCheck\Sdk\Response\CreateCreditCheckResponse;
@@ -26,7 +26,7 @@ use LaSouris\CreditCheck\Sdk\Response\GetCreditCheckResponse;
 )]
 final class FakeCreditChecker implements CreditChecker
 {
-    public function submitCheck(CreateCreditCheck $request): CreateCreditCheckResponse
+    public function submitCheck(CreateCreditCheckRequest $request): CreateCreditCheckResponse
     {
         return new CreateCreditCheckResponse('fake', 'CHECK-1', CheckStatus::Submitted);
     }
