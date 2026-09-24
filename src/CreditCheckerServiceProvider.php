@@ -54,7 +54,7 @@ final class CreditCheckerServiceProvider extends ServiceProvider
             ->prefix(EdrWebhook::prefix($config))
             ->name('credit-check.webhooks.')
             ->group(static function (): void {
-                Route::post(EdrWebhook::SUFFIX, EdrWebhookController::class)->name(EdrWebhook::SUFFIX);
+                Route::get(EdrWebhook::SUFFIX, EdrWebhookController::class)->name(EdrWebhook::SUFFIX);
             });
     }
 }

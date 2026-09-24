@@ -31,7 +31,7 @@ final readonly class EdrWebhookController
     private function parseRequest(Request $request): Metadata
     {
         return new Metadata(
-            reference: $request->query('Ref'),
+            reference: $request->query('reference'),
             orderId: $request->query('orderId'),
             newStatus: $request->query('newStatus'),
         );
