@@ -18,11 +18,11 @@ final class EdrWebhookCustomPrefixTest extends TestCase
 
     public function testRouteIsRegisteredUnderTheConfiguredPrefix(): void
     {
-        $this->postJson('/inbound/edr-callbacks/edr?reference=abc-123', [])->assertOk();
+        $this->getJson('/inbound/edr-callbacks/edr?reference=abc-123', [])->assertOk();
     }
 
     public function testDefaultPrefixIsNoLongerRegistered(): void
     {
-        $this->postJson('/' . EdrWebhook::DEFAULT_PREFIX . '/edr?reference=abc-123', [])->assertNotFound();
+        $this->getJson('/' . EdrWebhook::DEFAULT_PREFIX . '/edr?reference=abc-123', [])->assertNotFound();
     }
 }

@@ -24,8 +24,8 @@ final class EdrWebhookControllerTest extends TestCase
         Event::fake();
 
         $path = EdrWebhook::path($this->app['config']);
-        $response = $this->postJson(
-            "/{$path}?Ref=abc-123&orderId=ORDER-1&newStatus=Approved",
+        $response = $this->getJson(
+            "/{$path}?reference=abc-123&orderId=ORDER-1&newStatus=Approved",
             ['status' => 'accepted'],
         );
 
